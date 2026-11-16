@@ -1,0 +1,17 @@
+import {mkdirSync,readFileSync,writeFileSync,copyFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=path.dirname(fileURLToPath(import.meta.url));
+const output=path.join(root,'docs');
+mkdirSync(path.join(output,'assets'),{recursive:true});
+mkdirSync(path.join(output,'admin'),{recursive:true});
+const read=file=>readFileSync(path.join(root,file),'utf8');
+const html=read('public/index.html').replaceAll('"/assets/','"./assets/').replace('href="/style.css"','href="./style.css"').replace('src="/site.js"','src="./site.js"').replace('href="/admin"','href="./admin/"');
+writeFileSync(path.join(output,'index.html'),html);
+writeFileSync(path.join(output,'site.js'),read('public/site.js').replace("fetch('/api/public')","fetch('./site-config.json')").replaceAll("'/assets/'","'./assets/'"));
+copyFileSync(path.join(root,'public/style.css'),path.join(output,'style.css'));
+copyFileSync(path.join(root,'site-config.json'),path.join(output,'site-config.json'));
+for(const name of ['logo.png','taper.jpg','lowfade.jpg','beard.jpg'])copyFileSync(path.join(root,'public/assets',name),path.join(output,'assets',name));
+writeFileSync(path.join(output,'.nojekyll'),'');
+writeFileSync(path.join(output,'admin/index.html'),`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Área do barbeiro | Wesley Cort’s</title><link rel="icon" href="../assets/logo.png"><link rel="stylesheet" href="../style.css"></head><body><header class="header"><a class="brand" href="../"><img src="../assets/logo.png" alt="" width="47" height="53"><span>WESLEY CORT’S<small>BARBEARIA · RIO PRETO</small></span></a><a href="../" class="text-link">Voltar ao site ↗</a></header><main class="section"><p class="eyebrow">ÁREA EXCLUSIVA DO BARBEIRO</p><h1>ACESSO ONLINE<br><em>EM PREPARAÇÃO.</em></h1><p>O painel de gestão ainda não está disponível neste endereço.<br>O barbeiro pode continuar usando a versão instalada no computador.</p><a class="btn" href="../">Voltar para a barbearia <span>↗</span></a></main></body></html>`);
+console.log('Versão pública preparada em docs/; nenhum dado privado incluído.');
